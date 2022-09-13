@@ -96,6 +96,7 @@ class AddTextStatusScreen extends ConsumerWidget {
                               onTap: (){
                                 ref.read(statusControllerProvider).addTextStatus(addStatusController.textController.text);
                                 showSnackBar(context: context, content: "Status added");
+                                addStatusController.textController.clear();
                                 Navigator.pop(context);
                               },
                               child: Align(
@@ -112,15 +113,12 @@ class AddTextStatusScreen extends ConsumerWidget {
                             ),
                           ),
                           ),
-
                       ],
                     ),
                   ),
           ),
         ),
         ),
-
-
     );
   }
 }

@@ -8,7 +8,6 @@ class AddStatusController extends GetxController{
 
   @override
   void dispose() {
-    textController.clear();
     textController.dispose();
     super.dispose();
   }

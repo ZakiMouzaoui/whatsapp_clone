@@ -75,14 +75,26 @@ class ContactStatusScreen extends ConsumerWidget {
                             }
                             Navigator.pushNamed(context, "/view-status", arguments: storyItems);
                           },
-                          leading: CircleAvatar(
-                            backgroundImage: CachedNetworkImageProvider(
-                              statuses.last.profilePic
-                            ),
-                            radius: 25,
+                          leading: Stack(
+                            children: [
+                              CircleAvatar(
+                                backgroundImage: CachedNetworkImageProvider(
+                                    statuses.last.profilePic
+                                ),
+                                radius: 25,
+                              ),
+                              Container(
+                                width: 50,
+                                height:50,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: statuses.first.uid == uid ? Colors.grey : tabColor,width: 2.5)
+                                ),
+                              )
+                            ],
                           ),
-                          title: Text(statuses.first.uid == uid ? "My status" : statuses.first.userName, style: TextStyle(fontWeight: FontWeight.bold),),
-                          subtitle: Text(DateFormat.Hm().format(statuses.last.createdAt), style: TextStyle(color: Colors.grey),),
+                          title: Text(statuses.first.uid == uid ? "My status" : statuses.first.userName, style: const TextStyle(fontWeight: FontWeight.bold),),
+                          subtitle: Text(DateFormat.Hm().format(statusContact.lastStatusTime), style: const TextStyle(color: Colors.grey),),
                         );
                       },
                     ),
