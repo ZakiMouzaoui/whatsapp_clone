@@ -84,7 +84,7 @@ class AddTextStatusScreen extends ConsumerWidget {
                         const Expanded(child: SizedBox()),
                         Container(
                           padding: const EdgeInsets.all(8),
-                            height: 60,
+                            height: MediaQuery.of(context).size.height/11,
                             width: double.infinity,
                             decoration: const BoxDecoration(
                               color: Colors.black45,
@@ -94,7 +94,11 @@ class AddTextStatusScreen extends ConsumerWidget {
                             visible: addStatusController.showSendBtn,
                             child: GestureDetector(
                               onTap: (){
-                                ref.read(statusControllerProvider).addTextStatus(addStatusController.textController.text);
+                                ref.read(statusControllerProvider)
+                                    .addTextStatus(
+                                    addStatusController.textController.text,
+                                    addStatusController.colors.keys.elementAt(addStatusController.index)
+                                );
                                 showSnackBar(context: context, content: "Status added");
                                 addStatusController.textController.clear();
                                 Navigator.pop(context);

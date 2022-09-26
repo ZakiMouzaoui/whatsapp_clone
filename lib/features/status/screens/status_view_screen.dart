@@ -1,64 +1,102 @@
-import 'package:advstory/advstory.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:story_view/story_view.dart';
+import 'package:whatsapp_clone/features/status/repository/status_repository.dart';
 
-class StatusViewScreen extends StatefulWidget {
-  const StatusViewScreen({Key? key, required this.storyItems}) : super(key: key);
+class StatusViewScreen extends ConsumerStatefulWidget {
+  const StatusViewScreen({
+    Key? key,
+    required this.storyItems,
+    required this.uid,
+    required this.statusDocs,
+  }) : super(key: key);
 
   final List<StoryItem> storyItems;
+  final String uid;
+  final List<QueryDocumentSnapshot> statusDocs;
 
   @override
-  State<StatusViewScreen> createState() => _StatusViewScreenState();
+  ConsumerState<StatusViewScreen> createState() => _StatusViewScreenState();
 }
 
-class _StatusViewScreenState extends State<StatusViewScreen> {
+class _StatusViewScreenState extends ConsumerState<StatusViewScreen> {
   final StoryController storyController = StoryController();
-  final AdvStoryController advStoryController = AdvStoryController();
+  int currentIndex = 1;
+  bool seeCounter = true;
+
+  @override
+  void initState() {
+    storyController.playbackNotifier.listen((value) {
+      if(value == PlaybackState.next){
+        currentIndex += 1;
+        if(currentIndex == widget.storyItems.length){
+          ref.read(statusRepositoryProvider).completeStatus(
+            widget.uid,
+          );
+        }
+      }
+      else if(value == PlaybackState.previous){
+        currentIndex -= 1;
+      }
+    });
+    super.initState();
+  }
 
   @override
   void dispose() {
     storyController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        body: StoryView(
-          onVerticalSwipeComplete: (direction){
-            if (direction == Direction.down) {
-              Navigator.pop(context);
-            }
-          },
-            onComplete: (){
-            Navigator.pop(context);
+        child: Scaffold(
+      body: Stack(
+        children: [
+          GestureDetector(
+            onSecondaryLongPress: (){
+              setState(() {
+                seeCounter = false;
+              });
+              storyController.pause();
             },
-            onStoryShow: (storyItem){
-              print(storyItem);
+            onSecondaryLongPressCancel: (){
+              setState(() {
+                seeCounter = true;
+              });
             },
-
-            storyItems: widget.storyItems,
-            controller: storyController,
-
-        ),
-        // body: AdvStory(
-        //   preloadContent: true,
-        //   controller: advStoryController,
-        //   storyCount: 1,
-        //   storyBuilder: (index)=>Story(
-        //       footer: Text("footer"),
-        //       contentCount: 3,
-        //       contentBuilder: (contentIndex)=>SimpleCustomContent(builder: (_) { return Center(
-        //         child: Text("Hello"),
-        //       ); },)
-        //
-        //   ), trayBuilder: (int storyIndex) {
-        //     return AdvStoryTray(url: "",username: Text("zaki"),size: Size(50,50),);
-        // },
-        // ),
-      )
-
-    );
+            child: StoryView(
+              onVerticalSwipeComplete: (direction) {
+                if (direction == Direction.down) {
+                  Navigator.pop(context);
+                }
+              },
+              onComplete: () {
+                Navigator.pop(context);
+              },
+              onStoryShow: (storyItem) {
+                ref.read(statusRepositoryProvider).updateStatusSeenBy(
+                    widget.uid, widget.statusDocs[currentIndex-1].id
+                );
+              },
+              storyItems: widget.storyItems,
+              controller: storyController,
+            ),
+          ),
+          seeCounter
+              ?Align(alignment: Alignment.bottomCenter, child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.remove_red_eye_outlined),
+                  const SizedBox(width: 5,),
+                  Text(widget.statusDocs[currentIndex-1].get("seenBy").length.toString())
+                ],
+              ))
+              : Container()
+        ]
+      ),
+    ));
   }
 }

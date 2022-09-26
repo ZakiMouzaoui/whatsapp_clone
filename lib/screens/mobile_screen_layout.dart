@@ -1,9 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_clone/features/status/screens/contact_status_screen.dart';
-import 'package:whatsapp_clone/features/status/screens/status_view_screen.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 
 class MobileScreenLayout extends ConsumerStatefulWidget{
@@ -17,6 +19,7 @@ class MobileScreenLayout extends ConsumerStatefulWidget{
 
 class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with WidgetsBindingObserver, SingleTickerProviderStateMixin{
   late TabController tabController;
+  int index=0;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -39,9 +42,9 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
   @override
   void initState() {
     tabController = TabController(length: 3, vsync: this, animationDuration: Duration.zero)..addListener(() {
-      // setState(() {
-      //
-      // });
+      setState(() {
+
+      });
     });
     WidgetsBinding.instance.addObserver(this);
 
@@ -53,6 +56,26 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
     WidgetsBinding.instance.removeObserver(this);
     tabController.dispose();
     super.dispose();
+  }
+
+  void selectImage()async{
+    File? image = await pickImage(context);
+    if(image != null){
+      navigateToImagePreviewScreen(image);
+    }
+  }
+
+  void selectCamera()async{
+    File? image = await openCamera(context);
+    if(image != null){
+      navigateToImagePreviewScreen(image);
+    }
+  }
+
+  void navigateToImagePreviewScreen(File image){
+    Navigator.pushNamed(context, "/image-preview", arguments: {
+      "path": image.path
+    });
   }
 
   @override
@@ -101,7 +124,49 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
             onPressed: tabController.index == 0 ? (){
               Navigator.pushNamed(context, "/select-contact");
             } : (){
-
+              showDialog(
+                  context: context,
+                  builder: (context)=>SimpleDialog(
+                    children: [
+                      SimpleDialogOption(
+                        onPressed: (){
+                          selectImage();
+                        },
+                        child: Row(
+                          children: const [
+                            Icon(Icons.photo),
+                            SizedBox(width: 5,),
+                            Text("Open Gallery"),
+                          ],
+                        ),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: (){
+                          Navigator.pushNamed(context, "/camera");
+                        },
+                        child: Row(
+                          children: const [
+                            Icon(Icons.camera_alt),
+                            SizedBox(width: 5,),
+                            Text("Open Camera"),
+                          ],
+                        ),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          children: const [
+                            Icon(Icons.cancel),
+                            SizedBox(width: 5,),
+                            Text("Cancel"),
+                          ],
+                        ),
+                      )
+                    ],
+                  )
+              );
             },
             backgroundColor: tabColor,
             child: tabController.index == 0

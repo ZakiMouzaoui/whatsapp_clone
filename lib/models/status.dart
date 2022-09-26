@@ -3,48 +3,44 @@ import 'package:whatsapp_clone/common/enums/status_enum.dart';
 
 class Status{
   final String statusId;
-  final String uid;
-  final String userName;
-  final String profilePic;
   final StatusEnum statusType;
   final String statusContent;
-  final DateTime createdAt;
+  final String caption;
   final List<dynamic> seenBy;
+  final String? backgroundColor;
+  final DateTime createdAt;
 
   Status({
     required this.statusId,
-    required this.uid,
-    required this.userName,
-    required this.profilePic,
     required this.statusType,
     required this.statusContent,
-    required this.createdAt,
+    this.caption="",
     required this.seenBy,
+    this.backgroundColor,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toJson(){
     return {
       "statusId": statusId,
-      "uid": uid,
-      "userName": userName,
-      "profilePic": profilePic,
       "statusType": statusType.type,
+      "backgroundColor": backgroundColor,
       "statusContent": statusContent,
+      "caption": caption,
+      "seenBy": seenBy,
       "createdAt": createdAt,
-      "seenBy": seenBy
     };
   }
 
   static Status fromJson(Map<String, dynamic> json){
     return Status(
         statusId: json["statusId"],
-        uid: json["uid"],
-        userName: json["userName"],
-        profilePic: json["profilePic"],
         statusType: (json["statusType"] as String).toEnum(),
+        backgroundColor: json["backgroundColor"],
         statusContent: json["statusContent"],
+        caption: json["caption"],
+        seenBy: json["seenBy"],
         createdAt: (json["createdAt"] as Timestamp).toDate(),
-        seenBy: json["seenBy"]
     );
   }
 }

@@ -1,21 +1,30 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashed_circle/dashed_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:story_view/story_view.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/common/widgets/loader.dart';
+import 'package:whatsapp_clone/features/status/controller/add_status_controller.dart';
 import 'package:whatsapp_clone/features/status/repository/status_repository.dart';
-import 'package:whatsapp_clone/models/status.dart';
-import 'package:whatsapp_clone/models/status_contact.dart';
 
-class ContactStatusScreen extends ConsumerWidget {
+class ContactStatusScreen extends ConsumerStatefulWidget {
   const ContactStatusScreen({Key? key, required this.profilePic, required this.uid}) : super(key: key);
   final String profilePic;
   final String uid;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ContactStatusScreen> createState() => _ContactStatusScreenState();
+}
+
+class _ContactStatusScreenState extends ConsumerState<ContactStatusScreen> {
+  final addStatusController = Get.put(AddStatusController());
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -24,13 +33,13 @@ class ContactStatusScreen extends ConsumerWidget {
           children: [
             ListTile(
               onTap: (){
-
+                Navigator.pushNamed(context, "/camera");
               },
               leading: Stack(
                 children: [
                   CircleAvatar(
                     backgroundImage: CachedNetworkImageProvider(
-                      profilePic,
+                      widget.profilePic,
                     ),
                     radius: 25,
                   ),
@@ -57,44 +66,86 @@ class ContactStatusScreen extends ConsumerWidget {
                 color: Colors.grey
               ),),
             ),
-            FutureBuilder<List<StatusContact>>(
-              future: ref.watch(statusRepositoryProvider).getStatus(),
+            StreamBuilder<QuerySnapshot>(
+              stream: ref.read(statusRepositoryProvider).getStatus2(),
               builder: (context, snapshot) {
                 if(snapshot.hasData){
                   return Expanded(
                     child: ListView.builder(
-                      itemCount: snapshot.data!.length,
+                      itemCount: snapshot.data!.size,
                       itemBuilder: (_,index){
-                        final statusContact = snapshot.data![index];
-                        final statuses = statusContact.statuses;
-                        return ListTile(
-                          onTap: (){
-                            List<StoryItem> storyItems = [];
-                            for(final status in statuses){
-                              storyItems.add(StoryItem.text(title: status.statusContent, backgroundColor: Colors.grey[400]!));
+                        final statusContact = snapshot.data!.docs[index];
+                        return StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection("statusContacts")
+                              .doc(statusContact.id)
+                              .collection("statuses")
+                              .where("createdAt",
+                              isGreaterThanOrEqualTo: DateTime.now().subtract(24.hours))
+                              .snapshots(),
+
+                          builder: (context, snapshot2) {
+                            if(snapshot2.hasData){
+                              final statuses = snapshot2.data!;
+                              final lastStatusTime = statusContact.get("lastStatusTime").toDate();
+
+                              return GetBuilder<AddStatusController>(
+                                builder: (_) => ListTile(
+                                  onTap: (){
+                                    List<StoryItem> storyItems = [];
+                                    for(final statusDoc in statuses.docs){
+                                      if(statusDoc.get("statusType") == "text"){
+                                        storyItems.add(
+                                            StoryItem.text(
+                                                title: statusDoc.get("statusContent"),
+                                                backgroundColor: addStatusController.colors[statusDoc.get("backgroundColor")]!,
+                                                textStyle: const TextStyle(
+                                                    fontSize: 25
+                                                )
+                                            )
+                                        );
+                                      }
+                                      else if(statusDoc.get("statusType") == "image"){
+                                        storyItems.add(
+                                          StoryItem.pageImage(
+                                              url: statusDoc.get("statusContent"), controller: StoryController(),
+                                              caption: statusDoc.get("caption")
+                                          )
+                                        );
+                                      }
+                                    }
+                                    Navigator.pushNamed(context, "/view-status", arguments: {
+                                      "storyItems": storyItems,
+                                      "uid": statusContact.id,
+                                      "statusDocs": statuses.docs
+                                    });
+                                  },
+                                  leading: DashedCircle(
+                                    dashes: statuses.docs.length,
+                                    gapSize: statuses.docs.length > 1 ? 3 : 0,
+                                    color: statusContact.get("completedBy").contains(widget.uid)
+                                      ? Colors.grey : tabColor,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(3.0),
+                                      child: CircleAvatar(
+                                        backgroundImage: CachedNetworkImageProvider(
+                                            statusContact.get("profilePic")
+                                        ),
+                                        radius: 25,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(statusContact.id == widget.uid ? "My status" : statusContact.get("userName"), style: const TextStyle(fontWeight: FontWeight.bold),),
+                                  subtitle: Text(
+                                    "${DateTime.now().hour - lastStatusTime.hour < 0 ? "Yesterday " : ""}${DateFormat.Hm().format(lastStatusTime)}", style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ),
+                              );
                             }
-                            Navigator.pushNamed(context, "/view-status", arguments: storyItems);
-                          },
-                          leading: Stack(
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: CachedNetworkImageProvider(
-                                    statuses.last.profilePic
-                                ),
-                                radius: 25,
-                              ),
-                              Container(
-                                width: 50,
-                                height:50,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: statuses.first.uid == uid ? Colors.grey : tabColor,width: 2.5)
-                                ),
-                              )
-                            ],
-                          ),
-                          title: Text(statuses.first.uid == uid ? "My status" : statuses.first.userName, style: const TextStyle(fontWeight: FontWeight.bold),),
-                          subtitle: Text(DateFormat.Hm().format(statusContact.lastStatusTime), style: const TextStyle(color: Colors.grey),),
+                            else{
+                              return const Loader();
+                            }
+                          }
                         );
                       },
                     ),
@@ -102,7 +153,7 @@ class ContactStatusScreen extends ConsumerWidget {
                 }
                 return const Loader();
               }
-            )
+            ),
           ],
         ),
       ),

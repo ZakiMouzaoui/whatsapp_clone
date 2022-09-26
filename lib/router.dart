@@ -4,11 +4,15 @@ import 'package:whatsapp_clone/common/widgets/error.dart';
 import 'package:whatsapp_clone/features/auth/screens/login_screen.dart';
 import 'package:whatsapp_clone/features/auth/screens/otp_screen.dart';
 import 'package:whatsapp_clone/features/auth/screens/user_information_screen.dart';
+import 'package:whatsapp_clone/features/camera/screens/camera_screen.dart';
+import 'package:whatsapp_clone/features/camera/screens/image_preview_screen.dart';
 import 'package:whatsapp_clone/features/chat/screens/chat_screen.dart';
 import 'package:whatsapp_clone/features/select_contacts/screens/select_contacts_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/add_text_status_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/status_view_screen.dart';
 import 'package:whatsapp_clone/models/user_model.dart';
+
+import 'features/camera/screens/video_preview_screen.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch(settings.name){
@@ -26,7 +30,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case "/add-text-status":
       return MaterialPageRoute(builder: (_)=>AddTextStatusScreen());
     case "/view-status":
-      return MaterialPageRoute(builder: (_)=>StatusViewScreen(storyItems: settings.arguments as List<StoryItem>));
+      final storyItems = (settings.arguments as Map<String, dynamic>)["storyItems"] as List<StoryItem>;
+      final uid = (settings.arguments as Map<String, dynamic>)["uid"];
+      final statusDocs = (settings.arguments as Map<String, dynamic>)["statusDocs"];
+      return MaterialPageRoute(builder: (_)=>StatusViewScreen(
+          storyItems: storyItems,
+          uid: uid,
+          statusDocs: statusDocs,
+      ));
+    case "/image-preview":
+      final path = (settings.arguments as Map<String, dynamic>)["path"];
+      return MaterialPageRoute(builder: (_)=>ImagePreviewScreen(path: path));
+    case "/video-preview":
+      final path = (settings.arguments as Map<String, dynamic>)["path"];
+      return MaterialPageRoute(builder: (_)=>VideoPreviewScreen(path: path));
+    case "/camera":
+      return MaterialPageRoute(builder: (_)=>const CameraScreen());
     default:
       return MaterialPageRoute(builder: (_)=>const Scaffold(
         body: ErrorScreen(error: "Page not found",),

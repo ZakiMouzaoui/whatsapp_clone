@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
+import 'package:whatsapp_clone/colors.dart';
 
 void showSnackBar({required BuildContext context, required String content}){
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)));
+  ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(content,style: const TextStyle(color: Colors.white),),backgroundColor: searchBarColor,)
+  );
 }
 
 
@@ -13,6 +16,21 @@ Future<File?> pickImage(BuildContext context)async{
   File? image;
   try{
     final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if(pickedImage != null){
+      image = File(pickedImage.path);
+    }
+  }
+  catch(e){
+    showSnackBar(context: context, content: e.toString());
+  }
+  return image;
+}
+
+Future<File?> openCamera(BuildContext context)async{
+  File? image;
+  try{
+    final pickedImage = await ImagePicker().pickImage(source: ImageSource.camera);
 
     if(pickedImage != null){
       image = File(pickedImage.path);
@@ -51,6 +69,7 @@ Future<GiphyGif?> pickGIF(BuildContext context)async{
   }
   return gif;
 }
+
 
 const photoUrl = "https://media.cntraveler.com/photos/60596b398f4452dac88c59f8/"
     "16:9/w_3999,h_2249,c_limit/MtFuji-GettyImages-959111140.jpg";

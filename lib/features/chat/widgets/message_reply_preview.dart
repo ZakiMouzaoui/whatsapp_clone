@@ -13,7 +13,7 @@ class MessageReplyPreview extends ConsumerWidget {
     return Stack(
       children: [
         Container(
-        width: MediaQuery.of(context).size.width*0.81,
+        width: MediaQuery.of(context).size.width*0.79,
         decoration: BoxDecoration(
           color: chatBarMessage,
           borderRadius: BorderRadius.circular(10)

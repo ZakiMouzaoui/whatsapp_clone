@@ -203,21 +203,6 @@ class ChatRepository {
       List<ChatContact?> chatContacts = [];
       for (var doc in event.docs) {
         ChatContact contact = ChatContact.fromJson(doc.data());
-
-        // if ((chatContacts.singleWhere((it) => it?.contactId == contact.contactId,
-        //     orElse: () => null)) != null) {
-        //   chatContacts[chatContacts.indexWhere((element) => element?.contactId == contact.contactId)] = contact;
-        // }
-        // else{
-        //   chatContacts.add(contact);
-        // }
-        //----------------------------------------------
-        // ChatContact contactData = ChatContact(
-        //     name: userModel.name,
-        //     profilePic: userModel.profilePic,
-        //     contactId: userModel.uid,
-        //     lastMessage: contact.lastMessage,
-        //     timeSent: contact.timeSent);
         chatContacts.add(contact);
       }
       return chatContacts;

@@ -239,7 +239,7 @@ class _MyMessageCardState extends State<MyMessageCard>
 
                                   // TIME AND MESSAGE STATUS
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 3, left: 10),
+                                    padding: const EdgeInsets.only(bottom: 3, left: 10, right: 10),
                                     child: SizedBox(
                                       width: bubbleWidth != null ? bubbleWidth!-15: 0,
                                       child: Align(
