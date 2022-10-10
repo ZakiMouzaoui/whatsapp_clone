@@ -19,7 +19,7 @@ class StatusController{
     statusRepository.addTextStatus(text, backgroundColor);
   }
 
-  Future addFileStatus(File file, String caption, StatusEnum statusType)async{
-    statusRepository.addFileStatus(file, statusType, ref, caption);
+  Future addFileStatus(File file, String caption, int? duration, StatusEnum statusType)async{
+    await statusRepository.addFileStatus(file, statusType, ref, caption, duration);
   }
 }

@@ -9,10 +9,12 @@ import 'package:whatsapp_clone/features/camera/screens/image_preview_screen.dart
 import 'package:whatsapp_clone/features/chat/screens/chat_screen.dart';
 import 'package:whatsapp_clone/features/select_contacts/screens/select_contacts_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/add_text_status_screen.dart';
+import 'package:whatsapp_clone/features/status/screens/my_status_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/status_view_screen.dart';
 import 'package:whatsapp_clone/models/user_model.dart';
 
 import 'features/camera/screens/video_preview_screen.dart';
+import 'models/status.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch(settings.name){
@@ -46,6 +48,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (_)=>VideoPreviewScreen(path: path));
     case "/camera":
       return MaterialPageRoute(builder: (_)=>const CameraScreen());
+    case "/my-status":
+      final status = (settings.arguments as Map<String, dynamic>)["status"];
+      return MaterialPageRoute(builder: (_)=>MyStatusScreen(status: status,));
     default:
       return MaterialPageRoute(builder: (_)=>const Scaffold(
         body: ErrorScreen(error: "Page not found",),

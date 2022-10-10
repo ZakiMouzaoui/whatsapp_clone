@@ -62,7 +62,7 @@ class StatusRepository {
     }
   }
 
-  Future addFileStatus(File file, StatusEnum statusType, ProviderRef ref, String caption) async {
+  Future addFileStatus(File file, StatusEnum statusType, ProviderRef ref, String caption, int? duration) async {
     try{
       final String statusId = const Uuid().v1();
       final uid = auth.currentUser!.uid;
@@ -79,6 +79,7 @@ class StatusRepository {
         statusType: statusType,
         statusContent: fileUrl,
         caption: caption,
+        duration: duration,
         seenBy: [],
         createdAt: DateTime.now(),
       );
@@ -127,53 +128,6 @@ class StatusRepository {
     return numbers;
   }
 
-  /*
-  Future<List<StatusContact>> getStatus() async {
-    List<StatusContact> statusContacts = [];
-
-    // GETTING THE CURRENT USER CONTACTS WITH PHONE NUMBERS
-    final numbers = await getContactsNumbers();
-
-    // GET FIREBASE USERS THAT HAS ANY OF THE PHONE NUMBERS
-    final userSnapshot = await fireStore
-        .collection("users")
-        .where("phoneNumber", whereIn: numbers)
-        .get();
-
-    if (userSnapshot.docs.isNotEmpty) {
-      for (final userDoc in userSnapshot.docs) {
-        final statusSnapshot = await fireStore
-            .collection("statusContacts")
-            .doc(userDoc.id)
-            .collection("statuses")
-            .where("createdAt",
-                isGreaterThan: DateTime.now().subtract(24.hours))
-            .get();
-
-        if (statusSnapshot.docs.isNotEmpty) {
-          List<Status> statuses = [];
-          for (final doc in statusSnapshot.docs) {
-            Status status = Status.fromJson(doc.data());
-            statuses.add(status);
-          }
-          statusContacts.add(StatusContact(
-              statuses: statuses,
-              lastStatusTime: statuses.last.createdAt,
-              uid: userDoc.id,
-              userName: userModel.n,
-              profilePic: userModel.profilePic,
-          ));
-        }
-
-        statusContacts
-            .sort((a, b) => b.lastStatusTime.compareTo(a.lastStatusTime));
-      }
-    }
-    return statusContacts;
-  }
-
-   */
-
   Stream<QuerySnapshot> getStatus2(){
     //Stream<List<String>> numbers = Stream.fromFuture(getContactsNumbers());
     return fireStore
@@ -196,7 +150,7 @@ class StatusRepository {
     }
   }
 
-  void updateStatusSeenBy(String uid, String statusId)async{
+  Future updateStatusSeenBy(String uid, String statusId)async{
     if(uid != auth.currentUser!.uid){
       try {
         await fireStore
@@ -210,6 +164,27 @@ class StatusRepository {
       } catch (e) {
         printError(info: e.toString());
       }
+    }
+  }
+
+  Future deleteStatus(String statusId) async{
+    try{
+      final uid = auth.currentUser!.uid;
+      await fireStore.collection("statusContacts")
+          .doc(uid)
+          .collection("statuses")
+          .doc(statusId)
+          .delete();
+
+      final statuses = await fireStore.collection("statusContacts").doc(uid).collection("statuses").where("createdAt",
+          isGreaterThanOrEqualTo: DateTime.now().subtract(24.hours)).get();
+
+      if(statuses.size == 0){
+        await fireStore.collection("statusContacts").doc(uid).delete();
+      }
+    }
+    catch(e){
+      printError(info: e.toString());
     }
   }
 }

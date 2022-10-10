@@ -8,6 +8,7 @@ class Status{
   final String caption;
   final List<dynamic> seenBy;
   final String? backgroundColor;
+  final int? duration;
   final DateTime createdAt;
 
   Status({
@@ -17,6 +18,7 @@ class Status{
     this.caption="",
     required this.seenBy,
     this.backgroundColor,
+    this.duration,
     required this.createdAt,
   });
 
@@ -27,6 +29,7 @@ class Status{
       "backgroundColor": backgroundColor,
       "statusContent": statusContent,
       "caption": caption,
+      "duration": duration,
       "seenBy": seenBy,
       "createdAt": createdAt,
     };
@@ -39,6 +42,7 @@ class Status{
         backgroundColor: json["backgroundColor"],
         statusContent: json["statusContent"],
         caption: json["caption"],
+        duration: json["duration"],
         seenBy: json["seenBy"],
         createdAt: (json["createdAt"] as Timestamp).toDate(),
     );

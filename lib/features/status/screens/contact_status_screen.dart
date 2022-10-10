@@ -113,6 +113,16 @@ class _ContactStatusScreenState extends ConsumerState<ContactStatusScreen> {
                                           )
                                         );
                                       }
+                                      else if(statusDoc.get("statusType") == "video"){
+
+                                        storyItems.add(
+                                          StoryItem.pageVideo(
+                                              statusDoc.get("statusContent"),
+                                              controller: StoryController(),
+                                            duration: Duration(milliseconds: statusDoc.get("duration"))
+                                          )
+                                        );
+                                      }
                                     }
                                     Navigator.pushNamed(context, "/view-status", arguments: {
                                       "storyItems": storyItems,
@@ -138,6 +148,14 @@ class _ContactStatusScreenState extends ConsumerState<ContactStatusScreen> {
                                   title: Text(statusContact.id == widget.uid ? "My status" : statusContact.get("userName"), style: const TextStyle(fontWeight: FontWeight.bold),),
                                   subtitle: Text(
                                     "${DateTime.now().hour - lastStatusTime.hour < 0 ? "Yesterday " : ""}${DateFormat.Hm().format(lastStatusTime)}", style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  trailing: InkWell(
+                                      onTap: (){
+                                        Navigator.pushNamed(context, "/my-status", arguments: {
+                                          "status": statuses.docs
+                                        });
+                                      },
+                                      child: const Icon(Icons.more_horiz_rounded, color: Colors.grey,)
                                   ),
                                 ),
                               );
