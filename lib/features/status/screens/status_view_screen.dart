@@ -24,6 +24,7 @@ class _StatusViewScreenState extends ConsumerState<StatusViewScreen> {
   final StoryController storyController = StoryController();
   int currentIndex = 1;
   bool seeCounter = true;
+  int viewsCount = 0;
 
   @override
   void initState() {
@@ -76,10 +77,14 @@ class _StatusViewScreenState extends ConsumerState<StatusViewScreen> {
               onComplete: () {
                 Navigator.pop(context);
               },
-              onStoryShow: (storyItem) {
+              onStoryShow: (storyItem) async{
                 ref.read(statusRepositoryProvider).updateStatusSeenBy(
                     widget.uid, widget.statusDocs[currentIndex-1].id
                 );
+                await Future.delayed(Duration.zero);
+                setState(() {
+                  viewsCount = widget.statusDocs[currentIndex-1].get("seenBy").length;
+                });
               },
               storyItems: widget.storyItems,
               controller: storyController,
@@ -91,7 +96,7 @@ class _StatusViewScreenState extends ConsumerState<StatusViewScreen> {
                 children: [
                   const Icon(Icons.remove_red_eye_outlined),
                   const SizedBox(width: 5,),
-                  Text(widget.statusDocs[currentIndex-1].get("seenBy").length.toString())
+                  Text(viewsCount.toString())
                 ],
               ))
               : Container()

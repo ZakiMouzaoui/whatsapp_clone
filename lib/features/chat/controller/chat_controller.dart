@@ -6,7 +6,7 @@ import 'package:whatsapp_clone/common/enums/message_enums.dart';
 import 'package:whatsapp_clone/common/providers/message_reply_provider.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/chat/repository/chat_repository.dart';
-import 'package:whatsapp_clone/models/chat_contact.dart';
+import 'package:whatsapp_clone/models/chat_model.dart';
 import 'package:whatsapp_clone/models/message.dart';
 import 'package:whatsapp_clone/models/user_model.dart';
 
@@ -60,17 +60,15 @@ class ChatController{
     ));
   }
 
-  Stream<List<ChatContact?>>? getChatContacts(){
-    return chatRepository.getChatContacts();
+  Stream<List<ChatModel?>>? getChatContacts(){
+    return chatRepository.getChats();
   }
 
   Stream<List<Message>> getChatMessages(String receiverId){
     return chatRepository.getChatMessages(receiverId);
   }
 
-  void navigateToChatScreen(BuildContext context, ChatContact contact)async{
-    final userData = await chatRepository.fireStore.collection("users").doc(contact.contactId).get();
-    UserModel userModel = UserModel.fromJson(userData.data()!);
-    Navigator.pushNamed(context, '/chat', arguments: userModel);
+  void navigateToChatScreen(BuildContext context, ChatModel chatModel){
+    Navigator.pushNamed(context, '/chat', arguments: chatModel);
   }
 }

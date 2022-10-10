@@ -45,7 +45,7 @@ class MyApp extends ConsumerWidget{
             if(user == null){
               return const LandingScreen();
             }
-            return MobileScreenLayout(profilePic: user.profilePic, uid: user.uid,);
+            return MobileScreenLayout(profilePic: user.profilePic, uid: user.uid, name: user.name,);
           },
           error: (error, trace)=>ErrorScreen(error: error.toString()),
           loading: ()=>const Loader()

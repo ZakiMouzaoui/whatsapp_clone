@@ -15,10 +15,11 @@ class Message{
   final String repliedTo;
   final String repliedMessage;
   final MessageEnum repliedMessageType;
+  bool deleted;
 
   Message({required this.senderId, required this.receiverId, required this.text, required this.messageType,
   required this.timeSent, required this.messageId, required this.isSeen,
-    required this.repliedTo, required this.repliedMessage, required this.repliedMessageType, });
+    required this.repliedTo, required this.repliedMessage, required this.repliedMessageType,required this.deleted });
 
   Map<String, dynamic> toJson(){
     return {
@@ -31,7 +32,8 @@ class Message{
       "isSeen": isSeen,
       "repliedTo": repliedTo,
       "repliedMessage": repliedMessage,
-      "repliedMessageType": repliedMessageType.type
+      "repliedMessageType": repliedMessageType.type,
+      "deleted": deleted
     };
   }
 
@@ -46,7 +48,8 @@ class Message{
         isSeen: json["isSeen"],
         repliedTo: json["repliedTo"] ?? "",
         repliedMessage: json["repliedMessage"] ?? "",
-        repliedMessageType: json["repliedMessageType"] != null ? (json["repliedMessageType"] as String).toEnum() : MessageEnum.text
+        repliedMessageType: json["repliedMessageType"] != null ? (json["repliedMessageType"] as String).toEnum() : MessageEnum.text,
+        deleted: json["deleted"]
     );
   }
 }

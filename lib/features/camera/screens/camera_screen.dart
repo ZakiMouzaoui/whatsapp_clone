@@ -96,11 +96,14 @@ class _CameraScreenState extends State<CameraScreen>
           onTap: (){
             controller.setFocusMode(FocusMode.auto);
           },
-          child: InteractiveViewer(
-            minScale: 1,
-            maxScale: 4,
-            child: CameraPreview(
-              controller,
+          child: SizedBox(
+            width: double.infinity,
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 4,
+              child: CameraPreview(
+                controller,
+              ),
             ),
           )
         ),

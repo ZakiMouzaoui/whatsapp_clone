@@ -13,16 +13,18 @@ import 'package:whatsapp_clone/common/providers/message_reply_provider.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import 'package:whatsapp_clone/features/chat/widgets/message_reply_preview.dart';
-import 'package:whatsapp_clone/models/user_model.dart';
+import 'package:whatsapp_clone/features/group/controller/group_controller.dart';
+import 'package:whatsapp_clone/models/chat_model.dart';
+import 'package:get/get.dart';
 
 class BottomChatBox extends ConsumerStatefulWidget {
   const BottomChatBox({
     Key? key,
-    required this.userModel,
+    required this.chatModel,
     required this.scrollController,
   }) : super(key: key);
 
-  final UserModel userModel;
+  final ChatModel chatModel;
   final ScrollController scrollController;
 
   @override
@@ -37,6 +39,7 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
   FlutterSoundRecorder? soundRecorder;
   final _messageController = TextEditingController();
   bool isRecording = false;
+  final groupController = Get.put(GroupController());
 
   @override
   void initState() {
@@ -86,7 +89,7 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
       }
       else{
         await soundRecorder?.stopRecorder();
-        sendFileMessage(File(path), widget.userModel.uid, MessageEnum.audio);
+        sendFileMessage(File(path), widget.chatModel.contactId, MessageEnum.audio);
       }
       setState(() {
         isRecording = !isRecording;
@@ -102,6 +105,15 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
     ref
         .read(chatControllerProvider)
         .sendTextMessage(context, text, receiverUid);
+    _messageController.text = "";
+    showSendButton = false;
+    showCamera = true;
+    setState(() {});
+    widget.scrollController.jumpTo(widget.scrollController.position.minScrollExtent);
+  }
+
+  void sendGroupTextMessage(String message, String groupId){
+    groupController.sendTextMessage(message, groupId);
     _messageController.text = "";
     showSendButton = false;
     showCamera = true;
@@ -125,14 +137,14 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
   void selectImage() async {
     File? pickedImage = await pickImage(context);
     if (pickedImage != null) {
-      sendFileMessage(pickedImage, widget.userModel.uid, MessageEnum.image);
+      sendFileMessage(pickedImage, widget.chatModel.contactId, MessageEnum.image);
     }
   }
 
   void selectVideo() async {
     File? pickedVideo = await pickVideo(context);
     if (pickedVideo != null) {
-      sendFileMessage(pickedVideo, widget.userModel.uid, MessageEnum.video);
+      sendFileMessage(pickedVideo, widget.chatModel.contactId, MessageEnum.video);
     }
   }
 
@@ -157,7 +169,7 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
                 )),
             TextButton(
                 onPressed: () {
-                  sendGIFMessage(context, gif.url, widget.userModel.uid);
+                  sendGIFMessage(context, gif.url, widget.chatModel.contactId);
                   Navigator.pop(context);
                 },
                 child: const Text(
@@ -197,6 +209,7 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
         children: [
           isShowMessageReply ? const MessageReplyPreview() : Container(),
           Row(
@@ -300,9 +313,14 @@ class _BottomChatBoxState extends ConsumerState<BottomChatBox> {
               GestureDetector(
                 onTap: () {
                   if (showSendButton) {
-                    sendTextMessage(context, _messageController.text.trim(),
-                        widget.userModel.uid);
-                    messageReply?.cancelReply(ref);
+                    if(widget.chatModel.type == "contact"){
+                      sendTextMessage(context, _messageController.text.trim(),
+                          widget.chatModel.contactId);
+                      messageReply?.cancelReply(ref);
+                    }
+                    else{
+                      sendGroupTextMessage(_messageController.text, widget.chatModel.contactId);
+                    }
                   } else {
                     startRecording();
                   }

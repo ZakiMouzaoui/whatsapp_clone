@@ -36,15 +36,6 @@ class _ChatListState extends ConsumerState<ChatList>{
 
   @override
   Widget build(BuildContext context) {
-    // scrollController.addListener(() {
-    //   if(scrollController.offset > MediaQuery.of(context).size.height*0.2){
-    //     _scrollController.toggleBtn(true);
-    //   }
-    //   else{
-    //     _scrollController.toggleBtn(false);
-    //   }
-    // });
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: StreamBuilder<List<Message>>(

@@ -5,13 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
+import 'package:whatsapp_clone/features/camera/screens/camera_screen.dart';
 import 'package:whatsapp_clone/features/status/screens/contact_status_screen.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 
 class MobileScreenLayout extends ConsumerStatefulWidget{
-  const MobileScreenLayout({Key? key, required this.profilePic, required this.uid, }) : super(key: key);
+  const MobileScreenLayout({Key? key, required this.profilePic, required this.name, required this.uid, }) : super(key: key);
   final String profilePic;
   final String uid;
+  final String name;
 
   @override
   ConsumerState<MobileScreenLayout> createState() => _MobileScreenLayoutState();
@@ -19,7 +21,7 @@ class MobileScreenLayout extends ConsumerStatefulWidget{
 
 class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with WidgetsBindingObserver, SingleTickerProviderStateMixin{
   late TabController tabController;
-  int index=0;
+  int index=1;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -41,7 +43,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
 
   @override
   void initState() {
-    tabController = TabController(length: 3, vsync: this, animationDuration: Duration.zero)..addListener(() {
+    tabController = TabController(length: 4, vsync: this, animationDuration: Duration.zero, initialIndex: index)..addListener(() {
       setState(() {
 
       });
@@ -73,6 +75,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
   }
 
   void navigateToImagePreviewScreen(File image){
+    Navigator.pop(context);
     Navigator.pushNamed(context, "/image-preview", arguments: {
       "path": image.path
     });
@@ -81,13 +84,32 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           appBar: AppBar(
             title: const Text("Whatsapp",style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 20),),
             actions: [
               IconButton(onPressed: (){}, icon: const Icon(Icons.search, color: Colors.grey,)),
-              IconButton(onPressed: (){}, icon: const Icon(Icons.more_vert, color: Colors.grey,))
+              PopupMenuButton(
+                  onSelected: (value){
+                    if(value == 1){
+                      Navigator.pushNamed(context, "/new-group");
+                    }
+                    if(value == 2){
+                      Navigator.pushNamed(context, "/setting", arguments: {
+                        "name": widget.name,
+                        "profilePic": widget.profilePic
+                      });
+                    }
+                  },
+                  padding: EdgeInsets.zero,
+                  color: dividerColor,
+                  elevation: 1,
+                  icon: const Icon(Icons.more_vert_rounded, color: Colors.grey,),
+                  itemBuilder: (_)=>[
+                    const PopupMenuItem(value: 1, child: Text("New group"),),
+                const PopupMenuItem(value:2, child: Text("Settings"))
+              ])
             ],
             bottom: TabBar(
               controller: tabController,
@@ -99,6 +121,10 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
                 fontWeight: FontWeight.bold
               ),
               tabs: const [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 5),
+                  child: Icon(Icons.camera_alt)
+                ),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 15),
                   child: Text("CHATS"),
@@ -115,13 +141,15 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
             ),
           ),
           body: TabBarView(
-              controller: tabController, children: [
-            const ContactsList(),
-            ContactStatusScreen(profilePic: widget.profilePic, uid: widget.uid,),
-            const Text("CALLS PAGES")
+            controller: tabController,
+            children: [
+              const CameraScreen(),
+              ContactsList(),
+              ContactStatusScreen(profilePic: widget.profilePic, uid: widget.uid,),
+              const Text("CALLS PAGES")
           ],),
-          floatingActionButton: FloatingActionButton(
-            onPressed: tabController.index == 0 ? (){
+          floatingActionButton: tabController.index != 0 ? FloatingActionButton(
+            onPressed: tabController.index == 1 ? (){
               Navigator.pushNamed(context, "/select-contact");
             } : (){
               showDialog(
@@ -142,6 +170,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
                       ),
                       SimpleDialogOption(
                         onPressed: (){
+                          Navigator.pop(context);
                           Navigator.pushNamed(context, "/camera");
                         },
                         child: Row(
@@ -169,11 +198,12 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
               );
             },
             backgroundColor: tabColor,
-            child: tabController.index == 0
+            child: tabController.index != 0 ?
+            tabController.index == 1
                 ? const Icon(Icons.comment_rounded, color: Colors.white,)
-                : tabController.index == 1 ? const Icon(Icons.camera_alt, color: Colors.white,)
-                : const Icon(Icons.dialer_sip, color: Colors.white,),
-          ),
+                : tabController.index == 2 ? const Icon(Icons.camera_alt, color: Colors.white,)
+                : const Icon(Icons.dialer_sip, color: Colors.white,) : Container(),
+          ) : Container(),
         )
     );
   }

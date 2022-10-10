@@ -93,7 +93,7 @@ class AuthRepository{
       await fireStore.collection("users").doc(uid).set(userModel.toJson());
       Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context)=>MobileScreenLayout(profilePic: photo, uid: uid,)),
+          MaterialPageRoute(builder: (context)=>MobileScreenLayout(profilePic: photo, uid: uid, name: name,)),
           (route) => false);
     }
     catch(e){

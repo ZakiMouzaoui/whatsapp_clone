@@ -1,11 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/features/select_contacts/repository/select_contact_repository.dart';
+import 'package:whatsapp_clone/models/user_model.dart';
 
-final getContactsProvider = FutureProvider<List<Contact>>((ref){
+final getContactsProvider = FutureProvider<List<dynamic>>((ref){
   final selectContactRepository = ref.watch(selectContactRepositoryProvider);
-  return selectContactRepository.getContacts();
+  return selectContactRepository.getWhatsappContacts();
 });
 
 final selectContactController = Provider((ref){
@@ -19,11 +21,11 @@ class SelectContactController{
 
   SelectContactController({required this.ref, required this.selectContactRepository});
 
-  void selectContact(Contact selectedContact, BuildContext context){
+  void selectContact(UserModel selectedContact, BuildContext context){
     selectContactRepository.selectContact(selectedContact, context);
   }
 
-  Stream<List<Contact>> getContacts(){
-    return Stream.fromFuture(selectContactRepository.getContacts());
+  Stream<List<dynamic>> getWhatsappContacts(){
+    return Stream.fromFuture(selectContactRepository.getWhatsappContacts());
   }
 }

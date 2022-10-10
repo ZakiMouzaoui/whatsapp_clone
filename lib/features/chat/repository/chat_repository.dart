@@ -4,12 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:whatsapp_clone/common/enums/message_enums.dart';
 import 'package:whatsapp_clone/common/providers/message_reply_provider.dart';
 import 'package:whatsapp_clone/common/repositories/common_firebase_storage_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
-import 'package:whatsapp_clone/models/chat_contact.dart';
+import 'package:whatsapp_clone/models/chat_model.dart';
 import 'package:whatsapp_clone/models/message.dart';
 import 'package:whatsapp_clone/models/user_model.dart';
 
@@ -25,12 +26,15 @@ class ChatRepository {
   void _saveDataToContactSubCollection(UserModel senderUserData,
       UserModel receiverUserData, String message, DateTime sentTime) async {
     // FOR THE RECEIVER
-    var receiverChatContact = ChatContact(
+    var receiverChatContact = ChatModel(
         name: senderUserData.name,
         profilePic: senderUserData.profilePic,
         contactId: senderUserData.uid,
+        phoneNumber: senderUserData.phoneNumber,
         lastMessage: message,
-        timeSent: sentTime);
+        timeSent: sentTime,
+        type: "contact"
+    );
     await fireStore
         .collection("users")
         .doc(receiverUserData.uid)
@@ -39,12 +43,15 @@ class ChatRepository {
         .set(receiverChatContact.toJson());
 
     // FOR THE SENDER
-    var senderChatContact = ChatContact(
+    var senderChatContact = ChatModel(
         name: receiverUserData.name,
         profilePic: receiverUserData.profilePic,
+        phoneNumber: receiverUserData.phoneNumber,
         contactId: receiverUserData.uid,
         lastMessage: message,
-        timeSent: sentTime);
+        timeSent: sentTime,
+        type: "contact"
+    );
     await fireStore
         .collection("users")
         .doc(auth.currentUser!.uid)
@@ -74,6 +81,7 @@ class ChatRepository {
       repliedTo: messageReply != null ? messageReply.repliedUserName : "",
       repliedMessage: messageReply == null ? "" : messageReply.message,
       repliedMessageType: messageReply == null ? MessageEnum.text : messageReply.messageType,
+      deleted: false
     );
 
     await fireStore
@@ -193,20 +201,28 @@ class ChatRepository {
     }
   }
 
-  Stream<List<ChatContact?>>? getChatContacts() {
-    return fireStore
-        .collection("users")
-        .doc(auth.currentUser!.uid)
-        .collection("chats")
-        .snapshots()
-        .asyncMap((event) async {
-      List<ChatContact?> chatContacts = [];
-      for (var doc in event.docs) {
-        ChatContact contact = ChatContact.fromJson(doc.data());
-        chatContacts.add(contact);
-      }
-      return chatContacts;
-    });
+  Stream<List<ChatModel?>>? getChats() {
+    try{
+      return fireStore
+          .collection("users")
+          .doc(auth.currentUser!.uid)
+          .collection("chats")
+          .orderBy("timeSent", descending: true)
+          .snapshots()
+          .asyncMap((event) async {
+        List<ChatModel?> chatContacts = [];
+        for (var doc in event.docs) {
+          ChatModel contact = ChatModel.fromJson(doc.data());
+          chatContacts.add(contact);
+        }
+        return chatContacts;
+      });
+    }
+    catch(e){
+      printError(info: e.toString());
+      return null;
+    }
+
   }
 
   Stream<List<Message>> getChatMessages(String receiverId){
@@ -251,6 +267,20 @@ class ChatRepository {
         .update({
       'isSeen': true
     });
+  }
+  
+  void deleteChatMessages(List<String> messagesIds, String chatId)async{
+    final messagesCollection = await fireStore.collection("users")
+        .doc(auth.currentUser!.uid)
+        .collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .where("messageId", whereIn: messagesIds)
+        .get();
+
+    for (final messageDoc in messagesCollection.docs){
+      await messageDoc.reference.delete();
+    }
   }
 }
 

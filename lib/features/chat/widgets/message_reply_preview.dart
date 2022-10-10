@@ -19,22 +19,20 @@ class MessageReplyPreview extends ConsumerWidget {
           borderRadius: BorderRadius.circular(10)
         ),
         padding: const EdgeInsets.all(8),
-        child: Row(
-          children: [
-            Column(
+        child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(messageReply!.repliedUserName, style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: messageReply.isMe ? tabColor : Colors.purpleAccent
-                    ),),
-                    // GestureDetector(
-                    //   onTap: (){
-                    //     messageReply.cancelReply(ref);
-                    //   },
-                    //   child: const Icon(Icons.close, size: 16,),
-                    // )
-
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(messageReply!.repliedUserName,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: messageReply.isMe ? tabColor : Colors.purpleAccent
+                      ),),
+                  ],
+                ),
                 const SizedBox(height: 8,),
                 Text(
                     messageReply.messageType.type == "text"
@@ -46,12 +44,11 @@ class MessageReplyPreview extends ConsumerWidget {
                         : messageReply.messageType.type == "audio"
                         ? "Audio"
                         : messageReply.messageType.type == "gif"
-                        ? "Gif" : ""
+                        ? "Gif" : "",
                 )
               ],
             ),
-          ],
-        )
+
       ),
         Positioned(
           right: 0,

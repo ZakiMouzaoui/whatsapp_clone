@@ -4,44 +4,53 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/common/widgets/loader.dart';
 import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
-import 'package:whatsapp_clone/models/chat_contact.dart';
+import 'package:whatsapp_clone/features/group/controller/group_controller.dart';
+import 'package:whatsapp_clone/models/chat_model.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
   class ContactsList extends ConsumerWidget {
-  const ContactsList({Key? key}) : super(key: key);
+  ContactsList({Key? key}) : super(key: key);
+
+  final groupController = Get.put(GroupController());
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
-      child: StreamBuilder<List<ChatContact?>>(
-        stream: ref.watch(chatControllerProvider).getChatContacts(),
+      child: StreamBuilder<List<ChatModel?>>(
+        stream: ref.read(chatControllerProvider).getChatContacts(),
         builder: (context, snapshot) {
           if(snapshot.hasData){
             return ListView.separated(
               itemCount: snapshot.data!.length,
               itemBuilder: (_, index) {
-                final chatContact = snapshot.data![index];
-                final int diffInDays = DateTime.now().difference(chatContact!.timeSent).inDays;
+                final chatModel = snapshot.data![index];
+                final int diffInDays = DateTime.now().difference(chatModel!.timeSent).inDays;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     onTap: (){
-                      ref.read(chatControllerProvider).navigateToChatScreen(context, chatContact);
+                      if(chatModel.type == "contact"){
+                        ref.read(chatControllerProvider).navigateToChatScreen(context, chatModel);
+                      }
+                      else{
+                        groupController.navigateToChatScreen(context, chatModel);
+                      }
                     },
                     title: Text(
-                      chatContact.name,
+                      chatModel.name,
                       style: const TextStyle(fontSize: 18),
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        chatContact.lastMessage,
+                        chatModel.lastMessage,
                         style: const TextStyle(fontSize: 15),
                       ),
                     ),
                     leading: CachedNetworkImage(
-                      imageUrl: chatContact.profilePic,
+                      imageUrl: chatModel.profilePic,
                       imageBuilder: (context, imageProvider) => Container(
                         width: 50.0,
                         height: 50.0,
@@ -58,10 +67,10 @@ import 'package:intl/intl.dart';
                     ),
                     trailing: Text(
                       diffInDays >= 2
-                        ? DateFormat("dd/MM/yyyy").format(chatContact.timeSent)
+                        ? DateFormat("dd/MM/yyyy").format(chatModel.timeSent)
                         : diffInDays == 1
                       ? "Yesterday"
-                      : DateFormat.Hm().format(chatContact.timeSent),style: const TextStyle(
+                      : DateFormat.Hm().format(chatModel.timeSent),style: const TextStyle(
                         fontSize: 13,
                         color: Colors.grey
                     ),),

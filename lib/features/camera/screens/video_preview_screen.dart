@@ -4,7 +4,10 @@ import 'package:cached_video_player/cached_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/common/enums/status_enum.dart';
+import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/common/widgets/loader.dart';
+import 'package:whatsapp_clone/features/status/controller/status_controller.dart';
 
 class VideoPreviewScreen extends ConsumerStatefulWidget {
   const VideoPreviewScreen({Key? key, required this.path}) : super(key: key);
@@ -137,43 +140,16 @@ class _VideoPreviewScreenState extends ConsumerState<VideoPreviewScreen> {
                         const SizedBox(width: 5,),
                         GestureDetector(
                           onTap: ()async{
-                            showDialog(
-                                context: context,
-                                builder: (_)=>AlertDialog(
-                                  backgroundColor: searchBarColor,
-                                  content: SizedBox(
-                                    height: 90,
-                                    width: MediaQuery.of(context).size.width,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Loader(),
-                                        SizedBox(width: 5,),
-                                        Text(
-                                          "Please wait while uploading ...",
-                                          style: TextStyle(
-                                              color: Colors.white
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                            );
+                            showLoadingDialog(context);
 
-                            /*
                             await ref.read(statusControllerProvider).addFileStatus(
-                                File(widget.path), captionController.text.trim(), StatusEnum.video
+                                File(widget.path), captionController.text.trim(), videoPlayerController.value.duration.inMilliseconds, StatusEnum.video
                             ).then((_){
                               Navigator.pop(context);
                               Navigator.pop(context);
                               showSnackBar(context: context, content: "Status added");
                             });
 
-                             */
-                            await Future.delayed(Duration(milliseconds: 2000)).then((value){
-                              Navigator.pop(context);
-                            });
                           },
                           child: const CircleAvatar(
                             backgroundColor: tabColor,

@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/common/widgets/loader.dart';
 
 void showSnackBar({required BuildContext context, required String content}){
   ScaffoldMessenger.of(context).showSnackBar(
@@ -73,3 +75,43 @@ Future<GiphyGif?> pickGIF(BuildContext context)async{
 
 const photoUrl = "https://media.cntraveler.com/photos/60596b398f4452dac88c59f8/"
     "16:9/w_3999,h_2249,c_limit/MtFuji-GettyImages-959111140.jpg";
+
+Future<String> storeFileToFirebase(String ref, File file)async{
+  FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+  UploadTask uploadTask = firebaseStorage.ref().child(ref).putFile(file);
+  TaskSnapshot taskSnapshot = await uploadTask;
+  String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+  return downloadUrl;
+}
+
+void showLoadingDialog(context){
+  showDialog(
+      context: context,
+      builder: (_)=>AlertDialog(
+        backgroundColor: searchBarColor,
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: const [
+                  Loader(),
+                  SizedBox(width: 10,),
+                  Text(
+                    "Please wait ...",
+                    style: TextStyle(
+                        color: Colors.white
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      )
+  );
+}
