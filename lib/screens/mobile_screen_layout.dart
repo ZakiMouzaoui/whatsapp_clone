@@ -10,10 +10,9 @@ import 'package:whatsapp_clone/features/status/screens/contact_status_screen.dar
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
 
 class MobileScreenLayout extends ConsumerStatefulWidget{
-  const MobileScreenLayout({Key? key, required this.profilePic, required this.name, required this.uid, }) : super(key: key);
+  const MobileScreenLayout({Key? key, required this.profilePic, required this.uid, }) : super(key: key);
   final String profilePic;
   final String uid;
-  final String name;
 
   @override
   ConsumerState<MobileScreenLayout> createState() => _MobileScreenLayoutState();
@@ -90,26 +89,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
             title: const Text("Whatsapp",style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 20),),
             actions: [
               IconButton(onPressed: (){}, icon: const Icon(Icons.search, color: Colors.grey,)),
-              PopupMenuButton(
-                  onSelected: (value){
-                    if(value == 1){
-                      Navigator.pushNamed(context, "/new-group");
-                    }
-                    if(value == 2){
-                      Navigator.pushNamed(context, "/setting", arguments: {
-                        "name": widget.name,
-                        "profilePic": widget.profilePic
-                      });
-                    }
-                  },
-                  padding: EdgeInsets.zero,
-                  color: dividerColor,
-                  elevation: 1,
-                  icon: const Icon(Icons.more_vert_rounded, color: Colors.grey,),
-                  itemBuilder: (_)=>[
-                    const PopupMenuItem(value: 1, child: Text("New group"),),
-                const PopupMenuItem(value:2, child: Text("Settings"))
-              ])
+              IconButton(onPressed: (){}, icon: const Icon(Icons.more_vert, color: Colors.grey,))
             ],
             bottom: TabBar(
               controller: tabController,
@@ -144,7 +124,7 @@ class _MobileScreenLayoutState extends ConsumerState<MobileScreenLayout> with Wi
             controller: tabController,
             children: [
               const CameraScreen(),
-              ContactsList(),
+              const ContactsList(),
               ContactStatusScreen(profilePic: widget.profilePic, uid: widget.uid,),
               const Text("CALLS PAGES")
           ],),

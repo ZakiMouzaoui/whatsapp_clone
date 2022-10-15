@@ -101,9 +101,38 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
                     ),
                     GestureDetector(
                       onTap: () async {
-                        showLoadingDialog(context);
+                        showDialog(
+                            context: context,
+                            builder: (_)=>AlertDialog(
+                              backgroundColor: searchBarColor,
+                              content: SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: const [
+                                        Loader(),
+                                        SizedBox(width: 10,),
+                                        Text(
+                                          "Please wait ...",
+                                          style: TextStyle(
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                        );
+
                         await ref.read(statusControllerProvider).addFileStatus(
-                            File(widget.path), captionController.text.trim(), null, StatusEnum.image
+                            File(widget.path), captionController.text.trim(), null, StatusEnum.video
                         ).then((_){
                           Navigator.pop(context);
                           Navigator.pop(context);
